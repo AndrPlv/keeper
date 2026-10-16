@@ -10,7 +10,7 @@ with open('secret.json', 'r', encoding='UTF-8') as file:
 
 
 @app.route('/edit_user_list', methods=['POST'])
-def create_user():
+def edit_user_list():
     '''
         {'password': '*********',
          'CardID': 'A0V33R4P5D0',
@@ -24,16 +24,16 @@ def create_user():
         connect = sqlite3.connect('table.db')
         cursore = connect.cursor()
 
-        if not bool(cursore.execute('SELECT name_user FROM card_to_user WHERE id_card = ?', [requests.get('CardID')])) and requests.get('act') == 'del':
+        if bool(cursore.execute('SELECT name_user FROM card_to_user WHERE id_card = ?', [requests.get('CardID')]).fetchall()):
             return {'status': 'Not found the user'}, 404
         
         if requests.get('act') == 'del':
-            pass
-        elif request.get('act') == 'add':
-            pass
+            cursore.execute('DELETE FROM card_to_user WHERE id_card = ?', [requests.get('CardID')])
+        elif requests.get('act') == 'add':
+            cursore.execute('INSERT INTO card_to_user(id_card, name_user, time, group_user) VALUES (?,?,?,?)', [requests.get('CardID'), requests.get('NameUser'), requests.get('Time'), requests.get('Group')])
         else:
             return {'status': "I don't have this action"}, 400
-
+        connect.commit()
         cursore.close()
         connect.close()
         return {'status': 'good'}, 201
