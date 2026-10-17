@@ -1,7 +1,7 @@
 import requests
 respone = {'password': 'XdjL2biYNKxzRd',
-            'CardID': 'A0V33R4P5D0',
-            'NameUser': 'Liza Shiman',
+            'CardID': 'S0N4ED2F1D9',
+            'NameUser': 'Ярослав Всевлодович',
             'Group': 'ИЭ82//VIP(для преподователей)',
             'Time': '2026-10-14 22:43:50',
             'act': 'add'}

@@ -24,20 +24,28 @@ def edit_user_list():
         connect = sqlite3.connect('table.db')
         cursore = connect.cursor()
 
-        if bool(cursore.execute('SELECT name_user FROM card_to_user WHERE id_card = ?', [requests.get('CardID')]).fetchall()):
-            return {'status': 'Not found the user'}, 404
-        
-        if requests.get('act') == 'del':
-            cursore.execute('DELETE FROM card_to_user WHERE id_card = ?', [requests.get('CardID')])
-        elif requests.get('act') == 'add':
-            cursore.execute('INSERT INTO card_to_user(id_card, name_user, time, group_user) VALUES (?,?,?,?)', [requests.get('CardID'), requests.get('NameUser'), requests.get('Time'), requests.get('Group')])
+        user = cursore.execute('SELECT name_user FROM card_to_user WHERE id_card = ?;', [requests.get('CardID')]).fetchall()
+        if not(bool(user)):
+            if requests.get('act') == 'add':
+                cursore.execute('INSERT INTO card_to_user(id_card, name_user, time, group_user) VALUES (?,?,?,?)', [requests.get('CardID'), requests.get('NameUser'), requests.get('Time'), requests.get('Group')])
+            else:
+                return {'status': 'Not found the user in SQL table'}, 404
         else:
-            return {'status': "I don't have this action"}, 400
+            if requests.get('act') == 'del':            
+                cursore.execute('DELETE FROM card_to_user WHERE id_card = ?', [requests.get('CardID')])
+            else:
+                return {'status': "I don't have this action"}, 400
         connect.commit()
         cursore.close()
         connect.close()
         return {'status': 'good'}, 201
     return {'status': 'access denied'}, 403
+
+@app.route('/input_data', methods=['POST'])
+def input_data():
+    data = request.json
+
+    base = sqlite3.connect
 
 
 if __name__ == '__main__':
