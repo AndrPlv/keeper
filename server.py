@@ -41,11 +41,30 @@ def edit_user_list():
         return {'status': 'good'}, 201
     return {'status': 'access denied'}, 403
 
-@app.route('/input_data', methods=['POST'])
-def input_data():
-    data = request.json
+@app.route('/edit_accese', methods=['POST'])
+def edit_accese():
+    '''
+        {'password': '*********',
+         'NameUser': 'Пылов Андрей Константинович',
+         'Group': 'ИЭ82//VIP(для преподователей)'
+         'access': '0//1'}
+    '''    
+    requests = request.json
+    if requests.get('password') == passwords['password_for_add_user']:
+        level_access = requests['access']
+        
+        connect = sqlite3.connect('table.db')
+        cursore = connect.cursor()
 
-    base = sqlite3.connect
+        if cursore.execute('SELECT id FROM card_to_user WHERE name_user = ? AND group_user = ?', [requests['NameUser'], requests['Group']]).fetchone():
+            cursore.execute('UPDATE card_to_user SET access = (?) WHERE name_user = ? AND group_user = ?', [requests['access'], requests['NameUser'], requests['Group']])
+            connect.commit()
+            return {'status': 'good'}, 201
+        else:
+            return {'status': 'Not found the users'}     
+        cursore.close()
+        connect.close()                                                                                                                                                     
+    return {'status': 'access denied'}, 403    
 
 
 if __name__ == '__main__':
