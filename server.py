@@ -66,6 +66,32 @@ def edit_accese():
         connect.close()                                                                                                                                                     
     return {'status': 'access denied'}, 403    
 
+@app.route('/open_box', methods=['GET'])
+def open_box():
+    '''
+        {'CardID': 'A0V33R4P5D0',
+         'Time': 'y-m-d H:M:S'}
+    '''
+
+    data = request.args
+    base = sqlite3.connect()
+    cursore = base.cursor()
+
+    
+    if cursore.execute('SELECT id FROM card_to_user WHERE id_card = (?)', [data['CardID']]).fetchone():
+        level = cursore.execute('SELECT access FROM card_to_user WHERE id_card = (?)', [data['CardID']])
+
+    else:
+        return {'status': 'Not found the user'}, 404
+    
+    name_user = ursore.execute('SELECT name_user FROM card_to_user WHERE id_card = (?)', [data['CardID']]).fetchone()
+    name_user = ursore.execute('SELECT group_user FROM card_to_user WHERE id_card = (?)', [data['CardID']]).fetchone()   
+    cursore.execute('INSERT INTO box_history(name_user, act, time, group_user) VALUES (?,?,?,?)', [name_user, 'get_access', request['Time']])
+    base.commit()
+    
+    cursore.close()
+    base.close()
+    return {'open': level}, 200
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
