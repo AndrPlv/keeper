@@ -24,7 +24,11 @@ def edit_user_list():
         connect = sqlite3.connect('table.db')
         cursore = connect.cursor()
 
-        user = cursore.execute('SELECT name_user FROM card_to_user WHERE id_card = ?;', [requests.get('CardID')]).fetchall()
+
+        user = cursore.execute('SELECT name_user FROM card_to_user WHERE name_user = ?;', [requests.get('NameUser')]).fetchall()
+        ID = cursore.execute('SELECT name_user FROM card_to_user WHERE id_card = ?;', [requests.get('CardID')]).fetchall()
+        if user or ID:
+            return {'status': 'I have this info'}, 400
         if not(bool(user)):
             if requests.get('act') == 'add':
                 cursore.execute('INSERT INTO card_to_user(id_card, name_user, time, group_user) VALUES (?,?,?,?)', [requests.get('CardID'), requests.get('NameUser'), requests.get('Time'), requests.get('Group')])
@@ -35,6 +39,7 @@ def edit_user_list():
                 cursore.execute('DELETE FROM card_to_user WHERE id_card = ?', [requests.get('CardID')])
             else:
                 return {'status': "I don't have this action"}, 400
+
         connect.commit()
         cursore.close()
         connect.close()

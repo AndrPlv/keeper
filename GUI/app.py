@@ -9,8 +9,7 @@ import time
 CTk.set_appearance_mode('dark')
 
 rate = 9600
-password = "XdjL2biYNKxzRd"
-ip = ''
+
 ports = serial.tools.list_ports.comports()
 ports_list = [str(j.device) for j in ports]
 ports_list.insert(0, 'None')
@@ -28,22 +27,21 @@ def get_id():
         time.sleep(2)
 
         line = ser.readline().decode('utf-8').strip()
-        COM_port = line[9:]
+        COM_port = line[line.index(":")+1:]
         if COM_port:
             Card_ID.configure(text=COM_port)
-            ser.close()
         else:
             CTkMessagebox(
                 title="Информация",
                 message="Считыватель ничего не отправил, возможно нужно сменить порт",
-                icon="cancel",
+                icon="warning",
                 option_1="OK")              
     except:
         if port.get() == "None":
             CTkMessagebox(
                 title="Ошибка",
                 message="Выберете порт на котором расположено устройство RFID",
-                icon="cancel",
+                icon="warning",
                 option_1="OK")           
         else:
             CTkMessagebox(
@@ -51,15 +49,44 @@ def get_id():
                 message="Ошибка при работе с портом",
                 icon="cancel",
                 option_1="OK")
+    finally:
+        if ser.open:
+            ser.close()
 def send():
-    send = {'password': password,
-         'CardID': Card_ID.cget("text"),
-         'NameUser': Name_user.get(),
-         'Group': Group_user.get(),
-         'Time': datetime.now().strftime('%Y-%m-%d %H:%M:%S '),
-         'act': 'add'
-    }
-    code = requests.post(ip, json=send)
+    try:
+        if Card_ID.cget("text") and Name_user.get() and Group_user.get():
+            send = {'password': password,
+                'CardID': Card_ID.cget("text"),
+                'NameUser': Name_user.get(),
+                'Group': Group_user.get(),
+                'Time': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                'act': 'add'
+            }
+            code = requests.post(ip, json=send)
+            if code.status_code == 200:
+                CTkMessagebox(
+                    title="Ответ",
+                    message="Успешно",
+                    icon="info",
+                    option_1="OK")
+            else:
+                CTkMessagebox(
+                    title="Ошибка",
+                    message=f"Возрат: {code.status_code}",
+                    icon="cancel",
+                    option_1="OK")
+        else:
+            CTkMessagebox(
+                title="Недосчёт",
+                message="Перед тем как отправить, следует заполнить все поля",
+                icon="info",
+                option_1="OK")             
+    except:
+            CTkMessagebox(
+                title="Ошибка",
+                message=f"Возникла непредвиденная ошибка",
+                icon="warning",
+                option_1="OK")                    
 root = CTk.CTk()
 
 root.title("GUI для добавления пользователей")
